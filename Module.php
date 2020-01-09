@@ -1,0 +1,236 @@
+<?php
+
+namespace wdmg\amp;
+
+/**
+ * Yii2 RSS-feeds manager
+ *
+ * @category        Module
+ * @version         1.0.0
+ * @author          Alexsander Vyshnyvetskyy <alex.vyshnyvetskyy@gmail.com>
+ * @link            https://github.com/wdmg/yii2-amp
+ * @copyright       Copyright (c) 2019 W.D.M.Group, Ukraine
+ * @license         https://opensource.org/licenses/MIT Massachusetts Institute of Technology (MIT) License
+ *
+ */
+
+use Yii;
+use wdmg\base\BaseModule;
+use yii\base\InvalidConfigException;
+use yii\helpers\ArrayHelper;
+use yii\helpers\Url;
+
+/**
+ * RSS-feed module definition class
+ */
+class Module extends BaseModule
+{
+    /**
+     * {@inheritdoc}
+     */
+    public $controllerNamespace = 'wdmg\amp\controllers';
+
+    /**
+     * {@inheritdoc}
+     */
+    public $defaultRoute = "list/index";
+
+    /**
+     * @var string, the name of module
+     */
+    public $name = "Google AMP";
+
+    /**
+     * @var string, the description of module
+     */
+    public $description = "AMP pages generator";
+
+    /**
+     * @var array list of supported models for displaying a AMP pages
+     */
+    public $supportModels = [
+        'pages' => 'wdmg\pages\models\Pages',
+        'news' => 'wdmg\news\models\News',
+    ];
+
+    /**
+     * @var int cache lifetime, `0` - for not use cache
+     */
+    public $cacheExpire = 3600; // 1 hr.
+
+    /**
+     * @var string default route to render AMP pages (use "/" - for root)
+     */
+    public $ampRoute = "/amp";
+
+    /**
+     * @var string the module version
+     */
+    private $version = "1.0.0";
+
+    /**
+     * @var integer, priority of initialization
+     */
+    private $priority = 5;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function init()
+    {
+        parent::init();
+
+        // Set version of current module
+        $this->setVersion($this->version);
+
+        // Set priority of current module
+        $this->setPriority($this->priority);
+
+        // Process and normalize route for frontend
+        $this->ampRoute = self::normalizeRoute($this->ampRoute);
+
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function dashboardNavItems($createLink = false)
+    {
+        $items = [
+            'label' => $this->name,
+            'icon' => 'fa-bolt',
+            'url' => [$this->routePrefix . '/'. $this->id],
+            'active' => (in_array(\Yii::$app->controller->module->id, [$this->id]) &&  Yii::$app->controller->id == 'list'),
+        ];
+        return $items;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function bootstrap($app)
+    {
+        parent::bootstrap($app);
+
+        if (isset(Yii::$app->params["amp.supportModels"]))
+            $this->supportModels = Yii::$app->params["amp.supportModels"];
+
+        if (isset(Yii::$app->params["amp.cacheExpire"]))
+            $this->cacheExpire = Yii::$app->params["amp.cacheExpire"];
+
+        if (isset(Yii::$app->params["amp.ampRoute"]))
+            $this->ampRoute = Yii::$app->params["amp.ampRoute"];
+
+        if (!isset($this->supportModels))
+            throw new InvalidConfigException("Required module property `supportModels` isn't set.");
+
+        if (!isset($this->cacheExpire))
+            throw new InvalidConfigException("Required module property `cacheExpire` isn't set.");
+
+        if (!isset($this->ampRoute))
+            throw new InvalidConfigException("Required module property `ampRoute` isn't set.");
+
+        if (!is_array($this->supportModels))
+            throw new InvalidConfigException("Module property `supportModels` must be array.");
+
+        if (!is_integer($this->cacheExpire))
+            throw new InvalidConfigException("Module property `cacheExpire` must be integer.");
+
+        if (!is_string($this->ampRoute))
+            throw new InvalidConfigException("Module property `ampRoute` must be a string.");
+
+        // Add route to pass AMP pages in frontend
+        $ampRoute = $this->ampRoute;
+        if (empty($ampRoute) || $ampRoute == "/") {
+            $app->getUrlManager()->addRules([
+                [
+                    'pattern' => '/amp',
+                    'route' => 'admin/amp/default',
+                    'suffix' => '/amp'
+                ],
+                '/amp' => 'admin/amp/default'
+            ], true);
+        } else if (is_string($ampRoute)) {
+            $app->getUrlManager()->addRules([
+                [
+                    'pattern' => $ampRoute . '/',
+                    'route' => 'admin/amp/default',
+                    'suffix' => '/amp'
+                ],
+                $ampRoute . '/' => 'admin/amp/default'
+            ], true);
+        }
+
+        // Attach to events of create/change/remove of models for the subsequent clearing cache
+        if (!($app instanceof \yii\console\Application)) {
+            if ($cache = $app->getCache()) {
+                if (is_array($models = $this->supportModels)) {
+                    foreach ($models as $name => $class) {
+                        if (class_exists($class)) {
+                            $model = new $class();
+                            \yii\base\Event::on($class, $model::EVENT_AFTER_INSERT, function ($event) use ($cache) {
+                                $cache->delete(md5('google-amp'));
+                            });
+                            \yii\base\Event::on($class, $model::EVENT_AFTER_UPDATE, function ($event) use ($cache) {
+                                $cache->delete(md5('google-amp'));
+                            });
+                            \yii\base\Event::on($class, $model::EVENT_AFTER_DELETE, function ($event) use ($cache) {
+                                $cache->delete(md5('google-amp'));
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Generate base AMP URL
+     *
+     * @return null|string
+     */
+    public function getBaseURL() {
+        $url = null;
+        $ampRoute = $this->ampRoute;
+        if (empty($ampRoute) || $ampRoute == "/") {
+            $url = Url::to('/amp', true);
+        } else {
+            $url = Url::to($ampRoute . '/amp', true);
+        }
+        return $url;
+    }
+
+
+
+    /**
+     * Get items for building a Yandex turbo-pages
+     *
+     * @return array
+     */
+    public function getAmpItems() {
+        $items = [];
+        if (is_array($models = $this->supportModels)) {
+            foreach ($models as $name => $class) {
+                if (class_exists($class)) {
+                    $append = [];
+                    $model = new $class();
+                    foreach ($model->getPublished(['in_amp' => true]) as $item) {
+                        $append[] = [
+                            'url' => (isset($item->url)) ? $item->url : null,
+                            'name' => (isset($item->name)) ? $item->name : null,
+                            'title' => (isset($item->title)) ? $item->title : null,
+                            'image' => (isset($item->image)) ? $model->getImagePath(true) . '/' . $item->image : null,
+                            'description' => (isset($item->excerpt)) ? $item->excerpt : ((isset($item->description)) ? $item->description : null),
+                            'content' => (isset($item->content)) ? $item->content : null,
+                            'updated_at' => (isset($item->updated_at)) ? $item->updated_at : null,
+                            'status' => (isset($item->status)) ? (($item->status) ? true : false) : false
+                        ];
+                    };
+                    $items = ArrayHelper::merge($items, $append);
+                }
+            }
+        }
+
+        return $items;
+    }
+}
