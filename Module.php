@@ -6,7 +6,7 @@ namespace wdmg\amp;
  * Yii2 RSS-feeds manager
  *
  * @category        Module
- * @version         1.0.0
+ * @version         1.0.1
  * @author          Alexsander Vyshnyvetskyy <alex.vyshnyvetskyy@gmail.com>
  * @link            https://github.com/wdmg/yii2-amp
  * @copyright       Copyright (c) 2019 W.D.M.Group, Ukraine
@@ -66,7 +66,7 @@ class Module extends BaseModule
     /**
      * @var string the module version
      */
-    private $version = "1.0.0";
+    private $version = "1.0.1";
 
     /**
      * @var integer, priority of initialization
@@ -144,20 +144,20 @@ class Module extends BaseModule
         if (empty($ampRoute) || $ampRoute == "/") {
             $app->getUrlManager()->addRules([
                 [
-                    'pattern' => '/amp',
+                    'pattern' => '/<url:[\w-\/]+>',
                     'route' => 'admin/amp/default',
-                    'suffix' => '/amp'
+                    'suffix' => ''
                 ],
-                '/amp' => 'admin/amp/default'
+                '/<url:[\w-\/]+>' => 'admin/amp/default'
             ], true);
         } else if (is_string($ampRoute)) {
             $app->getUrlManager()->addRules([
                 [
-                    'pattern' => $ampRoute . '/',
+                    'pattern' => $ampRoute . '/<url:[\w-\/]+>',
                     'route' => 'admin/amp/default',
-                    'suffix' => '/amp'
+                    'suffix' => ''
                 ],
-                $ampRoute . '/' => 'admin/amp/default'
+                $ampRoute . '/<url:[\w-\/]+>' => 'admin/amp/default'
             ], true);
         }
 
@@ -232,5 +232,33 @@ class Module extends BaseModule
         }
 
         return $items;
+    }
+
+    /**
+     * Searches page resource among known URLs
+     *
+     * @param $url
+     * @return null if page not exist in AMP list
+     */
+    public function findPage($url = null) {
+
+        if (is_null($url))
+            return null;
+
+        if ($this->cacheExpire !== 0 && ($cache = Yii::$app->getCache())) {
+            $data = $cache->getOrSet(md5('google-amp'), function () {
+                return $this->getAmpItems();
+            }, intval($this->cacheExpire));
+        } else {
+            $data = $this->getAmpItems();
+        }
+
+        foreach ($data as $item) {
+            if ($item['url'] === $url) {
+                return $item;
+            }
+        }
+
+        return null;
     }
 }

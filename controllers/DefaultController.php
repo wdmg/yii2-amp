@@ -4,44 +4,41 @@ namespace wdmg\amp\controllers;
 
 use Yii;
 use yii\web\Controller;
-use yii\web\Response;
-use yii\helpers\ArrayHelper;
+use yii\web\NotFoundHttpException;
 use yii\helpers\Url;
+use yii\web\View;
 
 /**
- * DefaultController implements actions
+ * DefaultController implements actions for AMP pages
  */
 class DefaultController extends Controller
 {
-
     public $defaultAction = 'amp';
+    public $layout = '@wdmg/amp/views/layouts/amp';
 
     /**
      * Displays the rss-feed in xml for frontend.
      *
      * @return string
      */
-    public function actionAmp() {
+    public function actionAmp($url = null) {
 
         $module = $this->module;
-        if ($module->cacheExpire !== 0 && ($cache = Yii::$app->getCache())) {
-            $data = $cache->getOrSet(md5('google-amp'), function () use ($module)  {
-                return [
-                    'items' => $module->getAmpItems(),
-                    'builded_at' => date('r')
-                ];
-            }, intval($module->cacheExpire));
-        } else {
-            $data = [
-                'items' => $module->getAmpItems(),
-                'builded_at' => date('r')
-            ];
-        }
+        if ($url) {
 
-        Yii::$app->response->format = Response::FORMAT_RAW;
-        Yii::$app->getResponse()->getHeaders()->set('Content-Type', 'text/xml; charset=UTF-8');
-        return $this->renderPartial('amp', [
-            'items' => $data['items']
-        ]);
+            $url = Url::to($url, true);
+            /*if ($query = Yii::$app->request->getQueryString())
+                $url .= '/?' .$query;*/
+
+            if ($page = $module->findPage($url)) {
+                $this->getView()->clear();
+                return $this->render('index', [
+                    'module' => $module,
+                    'page' => $page
+                ]);
+            } else {
+                throw new NotFoundHttpException();
+            }
+        }
     }
 }
