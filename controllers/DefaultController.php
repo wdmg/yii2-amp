@@ -36,9 +36,8 @@ class DefaultController extends Controller
                     'module' => $module,
                     'page' => $page
                 ]);
-            } else {
-                throw new NotFoundHttpException();
             }
         }
+        throw new NotFoundHttpException();
     }
 }
