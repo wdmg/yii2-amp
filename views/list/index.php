@@ -24,7 +24,22 @@ $this->params['breadcrumbs'][] = $this->title;
             'layout' => '{summary}<br\/>{items}<br\/>{summary}<br\/><div class="text-center">{pager}</div>',
             'columns' => [
                 ['class' => 'yii\grid\SerialColumn'],
-                'url',
+
+                [
+                    'attribute' => 'url',
+                    'format' => 'raw',
+                    'value' => function($data) use ($module) {
+                        $output = '';
+                        if ($pageURL = $module->buildAmpPageUrl($data['url']))
+                            $output .= Html::a($pageURL, $pageURL, [
+                                    'target' => '_blank',
+                                    'data-pjax' => 0
+                                ]);
+                        $output .= '<br/>' . Html::tag('small', $data['url']);
+                        return $output;
+                    }
+                ],
+
                 'name',
                 'title',
                 'image',

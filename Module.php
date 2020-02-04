@@ -195,12 +195,29 @@ class Module extends BaseModule
         if (empty($ampRoute) || $ampRoute == "/") {
             $url = Url::to('/amp', true);
         } else {
-            $url = Url::to($ampRoute . '/amp', true);
+            $url = Url::to($ampRoute . '/', true);
         }
+
         return $url;
     }
 
+    /**
+     * Build URL to AMP page
+     *
+     * @param null $url
+     * @return bool|mixed
+     */
+    public function buildAmpPageUrl($url = null) {
 
+        if ($url) {
+            $base = Url::base(true);
+            $amp_base = $this->getBaseURL();
+
+            return str_replace($base, rtrim($amp_base, '/'), $url);
+        }
+
+        return false;
+    }
 
     /**
      * Get items for building a Yandex turbo-pages
