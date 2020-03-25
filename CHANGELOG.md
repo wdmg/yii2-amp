@@ -1,6 +1,11 @@
 Changelog
 =========
 
+## 1.0.2 (2020-03-25)
+ * Up to date dependencies
+ * Added buildAmpPageUrl() method
+ * Move NotFoundHttpException() for AMP page request
+ 
 ## 1.0.1 (2020-01-10)
  * Added default layout and view for AMP pages
  
