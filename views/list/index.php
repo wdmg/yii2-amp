@@ -19,35 +19,50 @@ $this->params['breadcrumbs'][] = $this->title;
 <div class="amp-index">
     <?php Pjax::begin(); ?>
     <?= GridView::widget([
-            'dataProvider' => $dataProvider,
-            'filterModel' => null,
-            'layout' => '{summary}<br\/>{items}<br\/>{summary}<br\/><div class="text-center">{pager}</div>',
-            'columns' => [
-                ['class' => 'yii\grid\SerialColumn'],
+        'dataProvider' => $dataProvider,
+        'filterModel' => null,
+        'layout' => '{summary}<br\/>{items}<br\/>{summary}<br\/><div class="text-center">{pager}</div>',
+        'columns' => [
+            ['class' => 'yii\grid\SerialColumn'],
 
-                [
-                    'attribute' => 'url',
-                    'format' => 'raw',
-                    'value' => function($data) use ($module) {
-                        $output = '';
-                        if ($pageURL = $module->buildAmpPageUrl($data['url']))
-                            $output .= Html::a($pageURL, $pageURL, [
-                                    'target' => '_blank',
-                                    'data-pjax' => 0
-                                ]);
-                        $output .= '<br/>' . Html::tag('small', $data['url']);
-                        return $output;
-                    }
-                ],
-
-                'name',
-                'title',
-                'image',
-                'description',
-                /*'content',*/
-                'updated_at',
-                'status'
+            [
+                'attribute' => 'url',
+                'format' => 'raw',
+                'value' => function($data) use ($module) {
+                    $output = '';
+                    if ($pageURL = $module->buildAmpPageUrl($data['url']))
+                        $output .= Html::a($pageURL, $pageURL, [
+                                'target' => '_blank',
+                                'data-pjax' => 0
+                            ]);
+                    $output .= '<br/>' . Html::tag('small', $data['url']);
+                    return $output;
+                }
             ],
+
+            'name',
+            'title',
+            'image',
+            'description',
+            /*'content',*/
+            'updated_at',
+            'status'
+        ],
+        'pager' => [
+            'options' => [
+                'class' => 'pagination',
+            ],
+            'maxButtonCount' => 5,
+            'activePageCssClass' => 'active',
+            'prevPageCssClass' => '',
+            'nextPageCssClass' => '',
+            'firstPageCssClass' => 'previous',
+            'lastPageCssClass' => 'next',
+            'firstPageLabel' => Yii::t('app/modules/amp', 'First page'),
+            'lastPageLabel'  => Yii::t('app/modules/amp', 'Last page'),
+            'prevPageLabel'  => Yii::t('app/modules/amp', '&larr; Prev page'),
+            'nextPageLabel'  => Yii::t('app/modules/amp', 'Next page &rarr;')
+        ],
     ]); ?>
     <hr/>
     <div class="btn-group">

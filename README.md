@@ -1,6 +1,6 @@
-[![Progress](https://img.shields.io/badge/required-Yii2_v2.0.33-blue.svg)](https://packagist.org/packages/yiisoft/yii2)
-[![Github all releases](https://img.shields.io/github/downloads/wdmg/yii2-amp/total.svg)](https://GitHub.com/wdmg/yii2-amp/releases/)
-[![GitHub version](https://badge.fury.io/gh/wdmg/yii2-amp.svg)](https://github.com/wdmg/yii2-amp)
+[![Yii2](https://img.shields.io/badge/required-Yii2_v2.0.33-blue.svg)](https://packagist.org/packages/yiisoft/yii2)
+[![Downloads](https://img.shields.io/packagist/dt/wdmg/yii2-amp.svg)](https://packagist.org/packages/wdmg/yii2-amp)
+[![Packagist Version](https://img.shields.io/packagist/v/wdmg/yii2-amp.svg)](https://packagist.org/packages/wdmg/yii2-amp)
 ![Progress](https://img.shields.io/badge/progress-in_development-red.svg)
 [![GitHub license](https://img.shields.io/github/license/wdmg/yii2-amp.svg)](https://github.com/wdmg/yii2-amp/blob/master/LICENSE)
 
@@ -66,6 +66,7 @@ Use the `Module::dashboardNavItems()` method of the module to generate a navigat
     ?>
 
 # Status and version [in progress development]
+* v.1.0.3 - Fixed models items retrieved
 * v.1.0.2 - Up to date dependencies
 * v.1.0.1 - Added default layout and view for AMP pages
 * v.1.0.0 - Added console, migrations and controller, support for Pages and News models

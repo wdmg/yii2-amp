@@ -1,6 +1,11 @@
 Changelog
 =========
 
+## 1.0.3 (2020-04-14)
+ * Fixed models items retrieved
+ * Added pagination
+ * Added support for Blog module
+
 ## 1.0.2 (2020-03-25)
  * Up to date dependencies
  * Added buildAmpPageUrl() method
