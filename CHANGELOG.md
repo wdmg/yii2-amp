@@ -1,6 +1,9 @@
 Changelog
 =========
 
+## 1.0.4 (2020-06-28)
+ * Update dependencies, README.md
+ 
 ## 1.0.3 (2020-04-14)
  * Fixed models items retrieved
  * Added pagination
