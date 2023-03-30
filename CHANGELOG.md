@@ -1,6 +1,9 @@
 Changelog
 =========
 
+## 1.1.0 (2023-03-30)
+ * Update dependencies, copyrights
+
 ## 1.0.4 (2020-06-28)
  * Update dependencies, README.md
  
