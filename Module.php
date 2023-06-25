@@ -95,7 +95,7 @@ class Module extends BaseModule
     /**
      * {@inheritdoc}
      */
-    public function dashboardNavItems($options = false)
+    public function dashboardNavItems($options = null)
     {
         $items = [
             'label' => $this->name,
@@ -103,7 +103,20 @@ class Module extends BaseModule
             'url' => [$this->routePrefix . '/'. $this->id],
             'active' => (in_array(\Yii::$app->controller->module->id, [$this->id]) &&  Yii::$app->controller->id == 'list'),
         ];
-        return $items;
+
+	    if (!is_null($options)) {
+
+		    if (isset($options['count'])) {
+			    $items['label'] .= '<span class="badge badge-default float-right">' . $options['count'] . '</span>';
+			    unset($options['count']);
+		    }
+
+		    if (is_array($options))
+			    $items = \wdmg\helpers\ArrayHelper::merge($items, $options);
+
+	    }
+
+	    return $items;
     }
 
     /**
